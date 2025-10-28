@@ -184,6 +184,9 @@ select { background: rgba(255,255,255,0.15); color: white; }
       <button id="loadBtn">📂 Charger</button>
     </div>
 
+    <!-- Nouveau bouton retour -->
+    <button class="back-btn" id="setupBackBtn">🔙 Retour au menu</button>
+
     <input type="file" id="fileInput" class="hidden-file" accept=".csv" />
     <select id="modeSelect">
       <option value="liste">📋 Liste numérotée</option>
@@ -228,6 +231,7 @@ const mapView = document.getElementById('mapView');
 const resultsContainer = document.getElementById('resultsContainer');
 const backBtn = document.getElementById('backBtn');
 const mapBackBtn = document.getElementById('mapBackBtn');
+const setupBackBtn = document.getElementById('setupBackBtn');
 
 const teamList=document.getElementById('teamList');
 const addTeamBtn=document.getElementById('addTeam');
@@ -339,6 +343,10 @@ teamDrawBtn.onclick=()=>{ selectionView.classList.add('hidden'); setupView.class
 mapDrawBtn.onclick=()=>{ selectionView.classList.add('hidden'); setupView.classList.add('hidden'); mapView.classList.remove('hidden'); showAllMaps(); }
 backBtn.onclick=goBack;
 mapBackBtn.onclick=()=>{ mapView.classList.add('hidden'); selectionView.classList.remove('hidden'); setupView.classList.add('hidden'); }
+setupBackBtn.onclick = () => {
+  setupView.classList.add('hidden');
+  selectionView.classList.remove('hidden');
+};
 
 /* --- Boutons setup équipe --- */
 addTeamBtn.onclick=()=>addTeamInput();
