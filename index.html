@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RikDraft</title>
+<link rel="icon" type="image/png" href="rik.png">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
@@ -184,7 +185,6 @@ select { background: rgba(255,255,255,0.15); color: white; }
       <button id="loadBtn">📂 Charger</button>
     </div>
 
-    <!-- Nouveau bouton retour -->
     <button class="back-btn" id="setupBackBtn">🔙 Retour au menu</button>
 
     <input type="file" id="fileInput" class="hidden-file" accept=".csv" />
@@ -205,11 +205,7 @@ select { background: rgba(255,255,255,0.15); color: white; }
   <!-- Tirage map -->
   <div id="mapView" class="view hidden">
     <h2 style="text-align:center;">Tirage de map</h2>
-    
-    <!-- Étape 1 : miniatures -->
     <div class="map-results" id="mapThumbnails"></div>
-    
-    <!-- Étape 2 : map sélectionnée -->
     <div class="map-results hidden" id="selectedMap"></div>
     
     <div class="btn-grid">
