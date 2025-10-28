@@ -17,9 +17,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
   min-height: 100vh;
   padding: 2rem;
+  position: relative;
 }
 
 h1, h2 { margin: .5rem 0; }
@@ -137,8 +137,10 @@ select { background: rgba(255,255,255,0.15); color: white; }
 .footer {
   font-size: .8rem;
   text-align: center;
-  margin-top: .5rem;
   opacity: .7;
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
 }
 
 .hidden { display: none; }
@@ -213,9 +215,10 @@ select { background: rgba(255,255,255,0.15); color: white; }
       <button class="back-btn" id="mapBackBtn">🔙 Retour</button>
     </div>
   </div>
-
-  <div class="footer">Made by Mascret Clement</div>
 </div>
+
+<!-- Footer désormais sous la boîte principale -->
+<div class="footer">Made by Mascret Clement</div>
 
 <script>
 /* --- Variables --- */
