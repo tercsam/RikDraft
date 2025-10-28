@@ -315,6 +315,8 @@ fileInput.onchange=e=>{
 };
 
 /* --- Tirage map --- */
+let lastMap = null; // mémorise la dernière map tirée
+
 function showAllMaps() {
   mapThumbnails.innerHTML = "";
   selectedMap.classList.add('hidden');
@@ -329,13 +331,29 @@ function showAllMaps() {
 }
 
 function drawSelectedMap() {
-  const shuffled = shuffle(maps);
-  const selected = shuffled[0];
+  let shuffled = shuffle([...maps]);
+  let selected = shuffled[0];
+
+  // Empêche que la même map ressorte deux fois de suite
+  if (lastMap && shuffled.length > 1) {
+    while (selected.name === lastMap.name) {
+      shuffled = shuffle([...maps]);
+      selected = shuffled[0];
+    }
+  }
+
+  lastMap = selected; // on garde la dernière map tirée
 
   mapThumbnails.classList.add('hidden');
   selectedMap.classList.remove('hidden');
-  selectedMap.innerHTML = `<div class="map-item"><img src="${selected.img}" alt="${selected.name}"><strong>${selected.name}</strong></div>`;
+  selectedMap.innerHTML = `
+    <div class="map-item">
+      <img src="${selected.img}" alt="${selected.name}">
+      <strong>${selected.name}</strong>
+    </div>
+  `;
 }
+
 
 /* --- Navigation --- */
 teamDrawBtn.onclick=()=>{ selectionView.classList.add('hidden'); setupView.classList.remove('hidden'); mapView.classList.add('hidden'); }
@@ -361,3 +379,4 @@ mapDrawBtnStage2.onclick = drawSelectedMap;
 
 </body>
 </html>
+ 
