@@ -1,382 +1,517 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RikDraft</title>
-<link rel="icon" type="image/png" href="rik.png">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RikDraft</title>
+  <link rel="icon" type="image/png" href="rik.png">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-<style>
-* { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+  <!--
+    =====================================================
+    STYLE PRINCIPAL (INLINE)
+    - Le CSS est volontairement inclus inline pour faciliter le
+      déploiement sur une seule page (aucune dépendance externe).
+    - Les commentaires ci-dessous expliquent la structure visuelle,
+      les classes importantes et les choix d'accessibilité / layout.
+    =====================================================
+  -->
+  <style>
+  /*
+    Reset / base
+    - box-sizing : éviter les surprises liées au padding/width
+    - font-family : cohérence visuelle (Poppins importé plus haut)
+  */
+  * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 
-body {
-  background: radial-gradient(circle at top left, #0f2027, #203a43, #2c5364);
-  color: white;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
-  padding: 2rem;
-  position: relative;
-}
+  /*
+    BODY
+    - Utilise un dégradé sombre en arrière-plan pour un bon contraste
+    - Flex column centré pour garder l'interface au centre de l'écran
+    - padding + min-height pour assurer un rendu correct sur petits écrans
+  */
+  body {
+    background: radial-gradient(circle at top left, #0f2027, #203a43, #2c5364);
+    color: white;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+    position: relative;
+  }
 
-h1, h2 { margin: .5rem 0; }
-h1 {
-  font-size: 2.4rem;
-  text-align: center;
-  background: linear-gradient(90deg, #00c6ff, #0072ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
+  /* Titres : taille et effet gradient pour un rendu moderne */
+  h1, h2 { margin: .5rem 0; }
+  h1 {
+    font-size: 2.4rem;
+    text-align: center;
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+  background-clip: text; /* standard property for broader compatibility */
+  -webkit-background-clip: text; /* fallback for older WebKit browsers */
+  -webkit-text-fill-color: transparent; /* keep text transparent so gradient shows */
+  }
 
-.container {
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(8px);
-  border-radius: 1.2rem;
-  box-shadow: 0 0 25px rgba(0,0,0,0.4);
-  width: 100%;
-  max-width: 700px;
-  padding: 1.5rem 2rem;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.4s ease;
-  overflow: hidden;
-}
+  /*
+    CONTAINER PRINCIPAL
+    - Fond semi-transparent + flou pour effet 'glassmorphism'
+    - max-width pour limiter la largeur sur grand écran
+  */
+  .container {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(8px);
+    border-radius: 1.2rem;
+    box-shadow: 0 0 25px rgba(0,0,0,0.4);
+    width: 100%;
+    max-width: 700px;
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s ease;
+    overflow: hidden;
+  }
 
-.scrollable {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: .3rem;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.3) transparent;
-}
-.scrollable::-webkit-scrollbar { width: 6px; }
-.scrollable::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
+  /* Zone scrollable interne (liste d'équipes, résultats) */
+  .scrollable {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: .3rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.3) transparent;
+  }
+  .scrollable::-webkit-scrollbar { width: 6px; }
+  .scrollable::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
 
-.team-list { display: flex; flex-direction: column; gap: .5rem; }
-.team-input { display: flex; align-items: center; gap: .5rem; }
-input {
-  flex: 1; padding: .6rem .8rem; border: none; border-radius: .5rem;
-  background: rgba(255,255,255,0.15); color: white; font-size: .95rem;
-  transition: background .3s;
-}
-input:focus { background: rgba(255,255,255,0.25); }
+  /* Éléments d'entrée des équipes */
+  .team-list { display: flex; flex-direction: column; gap: .5rem; }
+  .team-input { display: flex; align-items: center; gap: .5rem; }
+  input {
+    flex: 1; padding: .6rem .8rem; border: none; border-radius: .5rem;
+    background: rgba(255,255,255,0.15); color: white; font-size: .95rem;
+    transition: background .3s;
+  }
+  input:focus { background: rgba(255,255,255,0.25); }
 
-.delete-btn {
-  background: rgba(255,255,255,0.15);
-  border: none;
-  border-radius: 50%;
-  width: 30px; height: 30px;
-  color: #ff7b7b;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .25s;
-}
-.delete-btn:hover { background: rgba(255,0,0,0.4); color: white; transform: scale(1.1); }
+  /* Bouton pour supprimer une équipe (rond, clair) */
+  .delete-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    border-radius: 50%;
+    width: 30px; height: 30px;
+    color: #ff7b7b;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .25s;
+  }
+  .delete-btn:hover { background: rgba(255,0,0,0.4); color: white; transform: scale(1.1); }
 
-.btn-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: .5rem;
-  margin-top: .5rem;
-}
+  /* Grille de boutons (2 colonnes) utilisée dans plusieurs vues */
+  .btn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .5rem;
+    margin-top: .5rem;
+  }
 
-button, select {
-  padding: .8rem;
-  border: none;
-  border-radius: .6rem;
-  font-weight: 600;
-  background: linear-gradient(90deg, #00c6ff, #0072ff);
-  color: white;
-  cursor: pointer;
-  transition: all .25s;
-}
-button:hover { transform: scale(1.03); opacity: .9; }
-select { background: rgba(255,255,255,0.15); color: white; }
+  /* Style par défaut des boutons / select */
+  button, select {
+    padding: .8rem;
+    border: none;
+    border-radius: .6rem;
+    font-weight: 600;
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    color: white;
+    cursor: pointer;
+    transition: all .25s;
+  }
+  button:hover { transform: scale(1.03); opacity: .9; }
+  select { background: rgba(255,255,255,0.15); color: white; }
 
-#resetBtn, .back-btn { background: linear-gradient(90deg,#ff4e50,#f9d423); }
+  /* Boutons de retour / reset : couleur différente pour signaler action critique */
+  #resetBtn, .back-btn { background: linear-gradient(90deg,#ff4e50,#f9d423); }
 
-.results, .map-results {
-  flex: 1;
-  overflow-y: auto;
-  padding: .5rem;
-}
+  /* Conteneurs de résultats (liste ou maps) */
+  .results, .map-results {
+    flex: 1;
+    overflow-y: auto;
+    padding: .5rem;
+  }
 
-.team-item, .map-item {
-  background: rgba(255,255,255,0.1);
-  border-radius: .8rem;
-  padding: .7rem 1rem;
-  margin-bottom: .5rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  animation: fadeIn .4s ease;
-}
+  /* Item d'équipe / map : carte simple avec animation d'apparition */
+  .team-item, .map-item {
+    background: rgba(255,255,255,0.1);
+    border-radius: .8rem;
+    padding: .7rem 1rem;
+    margin-bottom: .5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    animation: fadeIn .4s ease;
+  }
 
-.map-item img { width: 220px; border-radius: 0.8rem; margin-bottom: .3rem; }
+  .map-item img { width: 220px; border-radius: 0.8rem; margin-bottom: .3rem; }
 
-.pools {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  gap: 1rem;
-}
-.pool {
-  flex: 1;
-  min-width: 220px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 1rem;
-  padding: .8rem;
-}
-.pool h3 { text-align: center; color: #00c6ff; }
+  /* Mise en page pour les poules (A/B) */
+  .pools {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 1rem;
+  }
+  .pool {
+    flex: 1;
+    min-width: 220px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 1rem;
+    padding: .8rem;
+  }
+  .pool h3 { text-align: center; color: #00c6ff; }
 
-.footer {
-  font-size: .8rem;
-  text-align: center;
-  opacity: .7;
-  position: absolute;
-  bottom: 10px;
-  width: 100%;
-}
+  /* Footer : positionné sous le container principal */
+  .footer {
+    font-size: .8rem;
+    text-align: center;
+    opacity: .7;
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+  }
 
-.hidden { display: none; }
+  /* Utilitaires pour masquer/afficher des vues */
+  .hidden { display: none; }
 
-.view {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity .4s, transform .4s;
-}
-.view.hidden { opacity: 0; transform: translateY(20px); pointer-events: none; }
+  .view {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity .4s, transform .4s;
+  }
+  .view.hidden { opacity: 0; transform: translateY(20px); pointer-events: none; }
 
-.hidden-file { display: none; }
+  .hidden-file { display: none; }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-</style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>🎮 RikDraft</h1>
+  <!--
+    =====================================================
+    STRUCTURE HTML
+    - L'application est une SPA (single page app) sans framework.
+    - Trois vues principales :
+      1) selectionView : choisir Tirage d'équipe ou Tirage de map
+      2) setupView     : configurer les équipes (ajout, CSV, mode)
+      3) resultView    : afficher le résultat du tirage
+      4) mapView       : galerie et tirage de carte
+    - Les vues sont simplement masquées/affichées via la classe `.hidden`.
+    =====================================================
+  -->
 
-  <!-- Sélection du type de tirage -->
-  <div id="selectionView" class="view">
-    <h2>Choisis le type de tirage</h2>
-    <div class="btn-grid">
-      <button id="teamDrawBtn">🎲 Tirage d'équipe</button>
-      <button id="mapDrawBtn">🗺️ Tirage de map</button>
+  <div class="container">
+    <h1>🎮 RikDraft</h1>
+
+    <!-- Sélection du type de tirage -->
+    <div id="selectionView" class="view">
+      <h2>Choisis le type de tirage</h2>
+      <div class="btn-grid">
+        <button id="teamDrawBtn">🎲 Tirage d'équipe</button>
+        <button id="mapDrawBtn">🗺️ Tirage de map</button>
+      </div>
+    </div>
+
+    <!-- Setup équipe
+         - Contient la liste dynamique d'inputs
+         - Boutons : ajouter, réinitialiser, sauver/charger CSV
+         - Selector de mode : liste ou poules
+    -->
+    <div id="setupView" class="view hidden">
+      <div class="scrollable">
+        <div class="team-list" id="teamList"></div>
+      </div>
+
+      <div class="btn-grid">
+        <button id="addTeam">➕ Ajouter</button>
+        <button id="resetBtn">♻️ Réinitialiser</button>
+        <button id="saveBtn">💾 Sauver</button>
+        <button id="loadBtn">📂 Charger</button>
+      </div>
+
+      <button class="back-btn" id="setupBackBtn">🔙 Retour au menu</button>
+
+      <!-- input file caché pour chargement CSV (utilisé par le bouton Charger) -->
+      <input type="file" id="fileInput" class="hidden-file" accept=".csv" />
+      <select id="modeSelect">
+        <option value="liste">📋 Liste numérotée</option>
+        <option value="poules">🏆 Deux poules (A / B)</option>
+      </select>
+      <button id="drawBtn">🎲 Tirer au sort</button>
+    </div>
+
+    <!-- Résultats équipe -->
+    <div id="resultView" class="view hidden">
+      <h2 style="text-align:center;">Résultats du tirage</h2>
+      <div class="results" id="resultsContainer"></div>
+      <button class="back-btn" id="backBtn">🔙 Retour</button>
+    </div>
+
+    <!-- Tirage map : galerie puis affichage de la map sélectionnée -->
+    <div id="mapView" class="view hidden">
+      <h2 style="text-align:center;">Tirage de map</h2>
+      <div class="map-results" id="mapThumbnails"></div>
+      <div class="map-results hidden" id="selectedMap"></div>
+      
+      <div class="btn-grid">
+        <button id="mapDrawBtnStage2">🎲 Tirer au sort</button>
+        <button class="back-btn" id="mapBackBtn">🔙 Retour</button>
+      </div>
     </div>
   </div>
 
-  <!-- Setup équipe -->
-  <div id="setupView" class="view hidden">
-    <div class="scrollable">
-      <div class="team-list" id="teamList"></div>
-    </div>
+  <!-- Footer désormais sous la boîte principale -->
+  <div class="footer">Made by Mascret Clement</div>
 
-    <div class="btn-grid">
-      <button id="addTeam">➕ Ajouter</button>
-      <button id="resetBtn">♻️ Réinitialiser</button>
-      <button id="saveBtn">💾 Sauver</button>
-      <button id="loadBtn">📂 Charger</button>
-    </div>
+  <!--
+    =====================================================
+    SCRIPT EMBEDDED
+    - Toutes les fonctions JS sont incluses ici pour simplifier la
+      distribution (page unique). Les commentaires ci-dessous
+      documentent l'API interne (fonctions, entrées, sorties).
+    - Contrat minimal :
+      * Entrées : valeurs des champs d'input (équipes) et interactions UI
+      * Sorties : DOM modifié (résultats), fichier CSV généré lors du save
+      * Erreurs gérées : alert() pour retours utilisateur simples
+    =====================================================
+  -->
+  <script>
+  /* --- Variables DOM principales (cache des sélections) ---
+     - Garder ces références évite des recherches DOM répétées.
+  */
+  const selectionView = document.getElementById('selectionView');
+  const teamDrawBtn = document.getElementById('teamDrawBtn');
+  const mapDrawBtn = document.getElementById('mapDrawBtn');
+  const setupView = document.getElementById('setupView');
+  const mapView = document.getElementById('mapView');
+  const resultsContainer = document.getElementById('resultsContainer');
+  const backBtn = document.getElementById('backBtn');
+  const mapBackBtn = document.getElementById('mapBackBtn');
+  const setupBackBtn = document.getElementById('setupBackBtn');
 
-    <button class="back-btn" id="setupBackBtn">🔙 Retour au menu</button>
+  const teamList=document.getElementById('teamList');
+  const addTeamBtn=document.getElementById('addTeam');
+  const resetBtn=document.getElementById('resetBtn');
+  const saveBtn=document.getElementById('saveBtn');
+  const loadBtn=document.getElementById('loadBtn');
+  const fileInput=document.getElementById('fileInput');
+  const drawBtn=document.getElementById('drawBtn');
+  const modeSelect=document.getElementById('modeSelect');
 
-    <input type="file" id="fileInput" class="hidden-file" accept=".csv" />
-    <select id="modeSelect">
-      <option value="liste">📋 Liste numérotée</option>
-      <option value="poules">🏆 Deux poules (A / B)</option>
-    </select>
-    <button id="drawBtn">🎲 Tirer au sort</button>
-  </div>
+  const mapThumbnails = document.getElementById('mapThumbnails');
+  const selectedMap = document.getElementById('selectedMap');
+  const mapDrawBtnStage2 = document.getElementById('mapDrawBtnStage2');
 
-  <!-- Résultats équipe -->
-  <div id="resultView" class="view hidden">
-    <h2 style="text-align:center;">Résultats du tirage</h2>
-    <div class="results" id="resultsContainer"></div>
-    <button class="back-btn" id="backBtn">🔙 Retour</button>
-  </div>
+  /* --- Données / constantes --- */
+  let teamCount=0;                    // compteur d'inputs affichés
+  const maxTeams=10;                  // limite opérationnelle
+  const defaultTeams=[                // équipes par défaut affichées au chargement
+    "FriendJoystickFire","FC Genost","Dark Falco","Saint-Martin au volant","CSV Power",
+    "Gypsy Dragon","Eternal Dragons","ScarletSnake","QuentinWeb","ACCL"
+  ];
 
-  <!-- Tirage map -->
-  <div id="mapView" class="view hidden">
-    <h2 style="text-align:center;">Tirage de map</h2>
-    <div class="map-results" id="mapThumbnails"></div>
-    <div class="map-results hidden" id="selectedMap"></div>
-    
-    <div class="btn-grid">
-      <button id="mapDrawBtnStage2">🎲 Tirer au sort</button>
-      <button class="back-btn" id="mapBackBtn">🔙 Retour</button>
-    </div>
-  </div>
-</div>
+  /* Maps : tableau d'objets {name, img} (facile à étendre) */
+  const maps = [
+    { name: "Valée Yoshi ", img: "map1.png" },
+    { name: "Route Arc-en-ciel", img: "map2.png" },
+    { name: "Station Glagla", img: "map3.png" },
+    { name: "Circuit Yoshi ", img: "map4.png" }
+  ];
 
-<!-- Footer désormais sous la boîte principale -->
-<div class="footer">Made by Mascret Clement</div>
+  /* --- Fonctions équipe --- */
+  /**
+   * refreshPlaceholders()
+   * - Met à jour les placeholders pour refléter l'ordre visible
+   * - Aucun paramètre, aucune valeur de retour
+   */
+  function refreshPlaceholders(){ document.querySelectorAll('.team-input input').forEach((i,index)=>i.placeholder=`Équipe ${index+1}`);}
 
-<script>
-/* --- Variables --- */
-const selectionView = document.getElementById('selectionView');
-const teamDrawBtn = document.getElementById('teamDrawBtn');
-const mapDrawBtn = document.getElementById('mapDrawBtn');
-const setupView = document.getElementById('setupView');
-const mapView = document.getElementById('mapView');
-const resultsContainer = document.getElementById('resultsContainer');
-const backBtn = document.getElementById('backBtn');
-const mapBackBtn = document.getElementById('mapBackBtn');
-const setupBackBtn = document.getElementById('setupBackBtn');
+  /**
+   * addTeamInput(value = "")
+   * - Ajoute dynamiquement un champ d'input pour une équipe
+   * - value : texte initial à placer dans l'input (optionnel)
+   * - Contraintes : n'ajoute pas au delà de `maxTeams`
+   */
+  function addTeamInput(value=""){ 
+    if(teamCount>=maxTeams){ alert("Max 10 équipes !"); return; }
+    teamCount++;
+    const div=document.createElement('div');
+    div.classList.add('team-input');
+    div.innerHTML=`<input value="${value}" placeholder="Équipe ${teamCount}"><button class="delete-btn">×</button>`;
 
-const teamList=document.getElementById('teamList');
-const addTeamBtn=document.getElementById('addTeam');
-const resetBtn=document.getElementById('resetBtn');
-const saveBtn=document.getElementById('saveBtn');
-const loadBtn=document.getElementById('loadBtn');
-const fileInput=document.getElementById('fileInput');
-const drawBtn=document.getElementById('drawBtn');
-const modeSelect=document.getElementById('modeSelect');
-
-const mapThumbnails = document.getElementById('mapThumbnails');
-const selectedMap = document.getElementById('selectedMap');
-const mapDrawBtnStage2 = document.getElementById('mapDrawBtnStage2');
-
-let teamCount=0;
-const maxTeams=10;
-const defaultTeams=[
-  "FriendJoystickFire","FC Genost","Dark Falco","Saint-Martin au volant","CSV Power",
-  "Gypsy Dragon","Eternal Dragons","ScarletSnake","QuentinWeb","ACCL"
-];
-
-/* Maps */
-const maps = [
-  { name: "Valée Yoshi ", img: "map1.png" },
-  { name: "Route Arc-en-ciel", img: "map2.png" },
-  { name: "Station Glagla", img: "map3.png" },
-  { name: "Circuit Yoshi ", img: "map4.png" }
-];
-
-/* --- Fonctions équipe --- */
-function refreshPlaceholders(){ document.querySelectorAll('.team-input input').forEach((i,index)=>i.placeholder=`Équipe ${index+1}`);}
-function addTeamInput(value=""){ 
-  if(teamCount>=maxTeams){ alert("Max 10 équipes !"); return; }
-  teamCount++;
-  const div=document.createElement('div');
-  div.classList.add('team-input');
-  div.innerHTML=`<input value="${value}" placeholder="Équipe ${teamCount}"><button class="delete-btn">×</button>`;
-  div.querySelector('.delete-btn').onclick=()=>{ div.remove(); teamCount--; refreshPlaceholders(); };
-  teamList.appendChild(div);
-}
-defaultTeams.forEach(addTeamInput);
-function resetAll(){ teamList.innerHTML=""; teamCount=0; }
-function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
-function generateList(teams){ 
-  resultsContainer.innerHTML="";
-  shuffle(teams).forEach((t,i)=>{ 
-    const item=document.createElement('div'); item.className="team-item"; 
-    item.innerHTML=`<strong>${i+1}.</strong> ${t}`;
-    resultsContainer.appendChild(item); 
-  });
-}
-function generatePools(teams){ 
-  const s=shuffle(teams); 
-  const mid=Math.ceil(s.length/2); 
-  const poolA=s.slice(0,mid), poolB=s.slice(mid);
-  resultsContainer.innerHTML=`<div class="pools"><div class="pool" id="poolA"><h3>Poule A</h3></div><div class="pool" id="poolB"><h3>Poule B</h3></div></div>`;
-  poolA.forEach(t=>{ const d=document.createElement('div'); d.className="team-item"; d.textContent=t; document.getElementById('poolA').appendChild(d); });
-  poolB.forEach(t=>{ const d=document.createElement('div'); d.className="team-item"; d.textContent=t; document.getElementById('poolB').appendChild(d); });
-}
-function drawMatches(){
-  const teams=[...document.querySelectorAll('#teamList input')].map(i=>i.value.trim()).filter(Boolean);
-  if(teams.length<2){ alert("Ajoute au moins 2 équipes !"); return; }
-  modeSelect.value==="liste"?generateList(teams):generatePools(teams);
-  setupView.classList.add('hidden'); selectionView.classList.add('hidden'); mapView.classList.add('hidden'); 
-  document.getElementById('resultView').classList.remove('hidden');
-}
-function goBack(){ document.getElementById('resultView').classList.add('hidden'); setupView.classList.remove('hidden'); selectionView.classList.add('hidden'); }
-
-/* --- CSV --- */
-function saveCSV(){
-  const teams=[...document.querySelectorAll('#teamList input')].map(i=>i.value.trim()).filter(Boolean);
-  if(!teams.length){ alert("Aucune équipe !"); return; }
-  const blob=new Blob([teams.join("\n")],{type:"text/csv;charset=utf-8"});
-  const link=document.createElement("a"); link.href=URL.createObjectURL(blob); link.download="teams.csv"; link.click();
-}
-function loadCSV(){ fileInput.click(); }
-fileInput.onchange=e=>{
-  const file=e.target.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=ev=>{ const lines=ev.target.result.split(/\r?\n/).filter(l=>l.trim()); resetAll(); lines.forEach(addTeamInput); };
-  reader.readAsText(file);
-};
-
-/* --- Tirage map --- */
-let lastMap = null; // mémorise la dernière map tirée
-
-function showAllMaps() {
-  mapThumbnails.innerHTML = "";
-  selectedMap.classList.add('hidden');
-  mapThumbnails.classList.remove('hidden');
-
-  maps.forEach(m => {
-    const div = document.createElement('div');
-    div.className = "map-item";
-    div.innerHTML = `<img src="${m.img}" alt="${m.name}"><strong>${m.name}</strong>`;
-    mapThumbnails.appendChild(div);
-  });
-}
-
-function drawSelectedMap() {
-  let shuffled = shuffle([...maps]);
-  let selected = shuffled[0];
-
-  // Empêche que la même map ressorte deux fois de suite
-  if (lastMap && shuffled.length > 1) {
-    while (selected.name === lastMap.name) {
-      shuffled = shuffle([...maps]);
-      selected = shuffled[0];
-    }
+    // suppression locale : met à jour l'état et les placeholders
+    div.querySelector('.delete-btn').onclick=()=>{ div.remove(); teamCount--; refreshPlaceholders(); };
+    teamList.appendChild(div);
   }
 
-  lastMap = selected; // on garde la dernière map tirée
+  // Initialisation : préremplit la liste avec des équipes par défaut
+  defaultTeams.forEach(addTeamInput);
 
-  mapThumbnails.classList.add('hidden');
-  selectedMap.classList.remove('hidden');
-  selectedMap.innerHTML = `
-    <div class="map-item">
-      <img src="${selected.img}" alt="${selected.name}">
-      <strong>${selected.name}</strong>
-    </div>
-  `;
-}
+  /**
+   * resetAll()
+   * - Vide la liste d'équipes et remet le compteur à zéro
+   * - Utilisé pour recharger via CSV ou pour recommencer
+   */
+  function resetAll(){ teamList.innerHTML=""; teamCount=0; }
 
+  /**
+   * shuffle(arr) -> array
+   * - Mélange un tableau (retourne une nouvelle référence mélangée)
+   * - NOTE : utilisation de sort() avec Math.random() est acceptable ici
+   *   car on ne cherche pas une distribution cryptographique.
+   */
+  function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
 
-/* --- Navigation --- */
-teamDrawBtn.onclick=()=>{ selectionView.classList.add('hidden'); setupView.classList.remove('hidden'); mapView.classList.add('hidden'); }
-mapDrawBtn.onclick=()=>{ selectionView.classList.add('hidden'); setupView.classList.add('hidden'); mapView.classList.remove('hidden'); showAllMaps(); }
-backBtn.onclick=goBack;
-mapBackBtn.onclick=()=>{ mapView.classList.add('hidden'); selectionView.classList.remove('hidden'); setupView.classList.add('hidden'); }
-setupBackBtn.onclick = () => {
-  setupView.classList.add('hidden');
-  selectionView.classList.remove('hidden');
-};
+  /**
+   * generateList(teams)
+   * - Crée une liste numérotée des équipes tirées au sort
+   * - teams : tableau de strings (noms d'équipes)
+   */
+  function generateList(teams){ 
+    resultsContainer.innerHTML="";
+    shuffle(teams).forEach((t,i)=>{ 
+      const item=document.createElement('div'); item.className="team-item"; 
+      item.innerHTML=`<strong>${i+1}.</strong> ${t}`;
+      resultsContainer.appendChild(item); 
+    });
+  }
 
-/* --- Boutons setup équipe --- */
-addTeamBtn.onclick=()=>addTeamInput();
-resetBtn.onclick=resetAll;
-drawBtn.onclick=drawMatches;
-saveBtn.onclick=saveCSV;
-loadBtn.onclick=loadCSV;
+  /**
+   * generatePools(teams)
+   * - Répartit les équipes en deux poules A/B (taille équilibrée)
+   * - Affiche chaque poule dans le container des résultats
+   */
+  function generatePools(teams){ 
+    const s=shuffle(teams); 
+    const mid=Math.ceil(s.length/2); 
+    const poolA=s.slice(0,mid), poolB=s.slice(mid);
+    resultsContainer.innerHTML=`<div class="pools"><div class="pool" id="poolA"><h3>Poule A</h3></div><div class="pool" id="poolB"><h3>Poule B</h3></div></div>`;
+    poolA.forEach(t=>{ const d=document.createElement('div'); d.className="team-item"; d.textContent=t; document.getElementById('poolA').appendChild(d); });
+    poolB.forEach(t=>{ const d=document.createElement('div'); d.className="team-item"; d.textContent=t; document.getElementById('poolB').appendChild(d); });
+  }
 
-/* --- Bouton tirage map étape 2 --- */
-mapDrawBtnStage2.onclick = drawSelectedMap;
+  /**
+   * drawMatches()
+   * - Prend les valeurs actuelles des inputs d'équipe
+   * - Valide qu'il y a au moins 2 équipes
+   * - Selon le mode (liste / poules) affiche le rendu correspondant
+   * - Cache les vues de configuration et affiche les résultats
+   */
+  function drawMatches(){
+    const teams=[...document.querySelectorAll('#teamList input')].map(i=>i.value.trim()).filter(Boolean);
+    if(teams.length<2){ alert("Ajoute au moins 2 équipes !"); return; }
+    modeSelect.value==="liste"?generateList(teams):generatePools(teams);
+    setupView.classList.add('hidden'); selectionView.classList.add('hidden'); mapView.classList.add('hidden'); 
+    document.getElementById('resultView').classList.remove('hidden');
+  }
 
-</script>
+  function goBack(){ document.getElementById('resultView').classList.add('hidden'); setupView.classList.remove('hidden'); selectionView.classList.add('hidden'); }
+
+  /* --- CSV (import / export) --- */
+  /**
+   * saveCSV()
+   * - Extrait les noms d'équipes, crée un Blob CSV et force le téléchargement
+   * - Utilisé pour sauvegarder rapidement la configuration
+   */
+  function saveCSV(){
+    const teams=[...document.querySelectorAll('#teamList input')].map(i=>i.value.trim()).filter(Boolean);
+    if(!teams.length){ alert("Aucune équipe !"); return; }
+    const blob=new Blob([teams.join("\n")],{type:"text/csv;charset=utf-8"});
+    const link=document.createElement("a"); link.href=URL.createObjectURL(blob); link.download="teams.csv"; link.click();
+  }
+
+  function loadCSV(){ fileInput.click(); }
+  fileInput.onchange=e=>{
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=ev=>{ const lines=ev.target.result.split(/\r?\n/).filter(l=>l.trim()); resetAll(); lines.forEach(addTeamInput); };
+    reader.readAsText(file);
+  };
+
+  /* --- Tirage map --- */
+  let lastMap = null; // mémorise la dernière map tirée pour éviter la répétition immédiate
+
+  /**
+   * showAllMaps()
+   * - Affiche toutes les miniatures de maps
+   * - Garde la section `selectedMap` cachée
+   */
+  function showAllMaps() {
+    mapThumbnails.innerHTML = "";
+    selectedMap.classList.add('hidden');
+    mapThumbnails.classList.remove('hidden');
+
+    maps.forEach(m => {
+      const div = document.createElement('div');
+      div.className = "map-item";
+      div.innerHTML = `<img src="${m.img}" alt="${m.name}"><strong>${m.name}</strong>`;
+      mapThumbnails.appendChild(div);
+    });
+  }
+
+  /**
+   * drawSelectedMap()
+   * - Sélectionne aléatoirement une map différente de la précédente si possible
+   * - Met à jour `lastMap` et affiche la map sélectionnée
+   */
+  function drawSelectedMap() {
+    let shuffled = shuffle([...maps]);
+    let selected = shuffled[0];
+
+    // Empêche que la même map ressorte deux fois de suite
+    if (lastMap && shuffled.length > 1) {
+      while (selected.name === lastMap.name) {
+        shuffled = shuffle([...maps]);
+        selected = shuffled[0];
+      }
+    }
+
+    lastMap = selected; // on garde la dernière map tirée
+
+    mapThumbnails.classList.add('hidden');
+    selectedMap.classList.remove('hidden');
+    selectedMap.innerHTML = `
+      <div class="map-item">
+        <img src="${selected.img}" alt="${selected.name}">
+        <strong>${selected.name}</strong>
+      </div>
+    `;
+  }
+
+  /* --- Navigation (gestion simple des vues) --- */
+  teamDrawBtn.onclick=()=>{ selectionView.classList.add('hidden'); setupView.classList.remove('hidden'); mapView.classList.add('hidden'); }
+  mapDrawBtn.onclick=()=>{ selectionView.classList.add('hidden'); setupView.classList.add('hidden'); mapView.classList.remove('hidden'); showAllMaps(); }
+  backBtn.onclick=goBack;
+  mapBackBtn.onclick=()=>{ mapView.classList.add('hidden'); selectionView.classList.remove('hidden'); setupView.classList.add('hidden'); }
+  setupBackBtn.onclick = () => {
+    setupView.classList.add('hidden');
+    selectionView.classList.remove('hidden');
+  };
+
+  /* --- Raccourcis boutons setup équipe --- */
+  addTeamBtn.onclick=()=>addTeamInput();
+  resetBtn.onclick=resetAll;
+  drawBtn.onclick=drawMatches;
+  saveBtn.onclick=saveCSV;
+  loadBtn.onclick=loadCSV;
+
+  /* --- Bouton tirage map étape 2 --- */
+  mapDrawBtnStage2.onclick = drawSelectedMap;
+
+  </script>
 
 </body>
 </html>
- 
