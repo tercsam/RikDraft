@@ -1,5 +1,627 @@
 <!DOCTYPE html>
+<html lang="fr"><!DOCTYPE html>
 <html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RikDraft | Tournament Edition</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    /* =========================================
+       VARIABLES & RESET
+       =========================================
+    */
+    :root {
+      --bg-dark: #090910;
+      --bg-panel: rgba(22, 22, 35, 0.85);
+      --primary: #6c5ce7;
+      --primary-glow: rgba(108, 92, 231, 0.6);
+      --accent: #00cec9;
+      --accent-glow: rgba(0, 206, 201, 0.6);
+      --danger: #ff7675;
+      --text-main: #dfe6e9;
+      --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; outline: none; }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--bg-dark);
+      /* Fond animé abstrait */
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(108, 92, 231, 0.2) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(0, 206, 201, 0.2) 0%, transparent 20%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      overflow-x: hidden;
+    }
+
+    /* Titres avec effet Cyberpunk */
+    h1, h2, h3 {
+      font-family: 'Orbitron', sans-serif;
+      text-transform: uppercase;
+      margin: 0.5rem 0;
+      letter-spacing: 2px;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px var(--accent-glow);
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    h2 { font-size: 1.5rem; color: var(--accent); text-align: center; margin-bottom: 1.5rem; }
+
+    /* =========================================
+       CONTAINER PRINCIPAL (GLASSMORPHISM)
+       =========================================
+    */
+    .container {
+      width: 100%;
+      max-width: 600px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(12px);
+      border: var(--glass-border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+      transition: height 0.3s ease;
+      min-height: 400px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Scrollbar custom */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+    ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+
+    /* =========================================
+       ELEMENTS D'INTERFACE
+       =========================================
+    */
+    
+    /* Boutons stylés */
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: auto; /* Pousse les boutons vers le bas */
+      padding-top: 1.5rem;
+    }
+
+    button {
+      background: rgba(255,255,255,0.05);
+      border: var(--glass-border);
+      color: white;
+      padding: 1rem;
+      border-radius: 12px;
+      font-weight: 600;
+      font-family: 'Orbitron', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: 0.5s;
+    }
+
+    button:hover::before { left: 100%; }
+    
+    button:hover {
+      background: var(--primary);
+      box-shadow: 0 0 15px var(--primary-glow);
+      transform: translateY(-2px);
+      border-color: transparent;
+    }
+
+    /* Bouton principal (CTA) */
+    .btn-cta {
+      background: linear-gradient(135deg, var(--primary) 0%, #a29bfe 100%);
+      grid-column: span 2;
+      font-size: 1.1rem;
+    }
+
+    /* Bouton retour */
+    .btn-back {
+      background: transparent;
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      margin-top: 1rem;
+      width: 100%;
+    }
+    .btn-back:hover { background: var(--danger); color: white; box-shadow: 0 0 15px rgba(255, 118, 117, 0.4); }
+
+    /* Inputs */
+    .team-list {
+      display: flex; flex-direction: column; gap: 0.8rem;
+      max-height: 400px; overflow-y: auto; padding-right: 5px; margin-bottom: 1rem;
+    }
+
+    .team-input {
+      display: flex; align-items: center; gap: 0.5rem;
+      animation: slideIn 0.3s ease forwards;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      transition: 0.3s;
+    }
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 10px rgba(0, 206, 201, 0.2);
+    }
+
+    /* Bouton supprimer (petit rond) */
+    .delete-btn {
+      width: 36px; height: 36px;
+      padding: 0;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255, 118, 117, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(255, 118, 117, 0.3);
+    }
+    .delete-btn:hover { background: var(--danger); color: white; transform: rotate(90deg); }
+
+    /* Select */
+    select {
+      width: 100%;
+      padding: 1rem;
+      background: rgba(0,0,0,0.3);
+      border: var(--glass-border);
+      color: white;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* =========================================
+       RESULTATS & MAPS
+       =========================================
+    */
+    .results-container {
+      display: flex; flex-direction: column; gap: 0.5rem;
+      max-height: 500px; overflow-y: auto;
+    }
+
+    .result-card {
+      background: rgba(255,255,255,0.03);
+      border-left: 4px solid var(--accent);
+      padding: 1rem;
+      border-radius: 0 8px 8px 0;
+      display: flex; justify-content: space-between; align-items: center;
+      opacity: 0; transform: translateX(-20px);
+      animation: fadeInList 0.5s ease forwards;
+    }
+
+    .pool-container {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+    }
+    .pool-column {
+      flex: 1; min-width: 200px;
+      background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 12px;
+    }
+    .pool-column h3 { color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; }
+
+    /* MAPS */
+    .map-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1rem;
+      max-height: 400px; overflow-y: auto;
+    }
+    .map-card {
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px; overflow: hidden;
+      border: 1px solid transparent;
+      transition: 0.3s;
+      position: relative;
+    }
+    .map-card img { width: 100%; height: 100px; object-fit: cover; display: block; }
+    
+    /* Fallback CSS si pas d'image */
+    .map-placeholder {
+      width: 100%; height: 100px;
+      background: linear-gradient(45deg, #2d3436, #636e72);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+    }
+
+    .map-card span {
+      display: block; padding: 0.5rem; text-align: center; font-size: 0.8rem; font-weight: 600;
+    }
+
+    /* Map sélectionnée (Grande) */
+    .selected-map-view {
+      text-align: center;
+      animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .selected-map-img {
+      width: 100%; max-height: 250px; object-fit: cover;
+      border-radius: 12px;
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 30px var(--accent-glow);
+      margin-bottom: 1rem;
+    }
+    .map-name-big {
+      font-size: 2rem; color: var(--accent); font-family: 'Orbitron';
+    }
+
+    /* =========================================
+       ANIMATIONS & UTILITAIRES
+       =========================================
+    */
+    .view { display: none; height: 100%; flex-direction: column; }
+    .view.active { display: flex; animation: fadeIn 0.4s ease; }
+    .hidden { display: none !important; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes fadeInList { to { opacity: 1; transform: translateX(0); } }
+
+    /* Footer */
+    .footer {
+      margin-top: 1rem; font-size: 0.8rem; opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>RikDraft</h1>
+
+  <div class="container">
+    
+    <div id="selectionView" class="view active">
+      <h2>Initialisation du protocole</h2>
+      <p style="text-align:center; opacity:0.7; margin-bottom: 2rem;">Sélectionnez le module à charger</p>
+      
+      <div class="btn-grid" style="grid-template-columns: 1fr;">
+        <button onclick="navTo('setupView')">🎲 Tirage d'Équipes / Poules</button>
+        <button onclick="navTo('mapView'); initMaps();">🗺️ Sélection de Map</button>
+      </div>
+    </div>
+
+    <div id="setupView" class="view">
+      <h2>Configuration du Lobby</h2>
+      
+      <div class="team-list" id="teamList">
+        </div>
+
+      <div class="btn-grid">
+        <button onclick="addTeamInput()">➕ Ajouter Joueur</button>
+        <button onclick="resetAll()" style="background: rgba(255, 118, 117, 0.1); color: var(--danger); border-color: var(--danger);">♻️ Reset</button>
+      </div>
+
+      <div style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+        <select id="modeSelect">
+          <option value="liste">📋 Liste Aléatoire (Ordre de passage)</option>
+          <option value="poules">🏆 Tournoi (Poules A / B)</option>
+        </select>
+        
+        <div class="btn-grid">
+          <button class="btn-cta" onclick="processDraw()">🚀 LANCER LE TIRAGE</button>
+        </div>
+        
+        <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+           <button onclick="saveCSV()" style="font-size:0.8rem; padding:0.5rem;">💾 Sauver CSV</button>
+           <button onclick="document.getElementById('fileInput').click()" style="font-size:0.8rem; padding:0.5rem;">📂 Charger CSV</button>
+        </div>
+      </div>
+
+      <button class="btn-back" onclick="navTo('selectionView')">🔙 Retour Menu</button>
+    </div>
+
+    <div id="resultView" class="view">
+      <h2>Résultats</h2>
+      <div id="resultsContainer" class="results-container"></div>
+      <button class="btn-back" onclick="navTo('setupView')">🔙 Modifier Configuration</button>
+    </div>
+
+    <div id="mapView" class="view">
+      <h2>Base de données Maps</h2>
+      
+      <div id="mapGallery" class="map-grid"></div>
+      
+      <div id="drawnMapDisplay" class="hidden selected-map-view">
+        <div id="rouletteImgContainer"></div>
+        <div class="map-name-big" id="rouletteName">?</div>
+      </div>
+
+      <div class="btn-grid">
+        <button id="spinBtn" class="btn-cta" onclick="spinRoulette()">🎲 TIRER UNE MAP</button>
+        <button class="btn-back" onclick="resetMapUI()">🔙 Galerie</button>
+      </div>
+      
+      <button class="btn-back" onclick="navTo('selectionView')" style="margin-top:0.5rem; border-color: rgba(255,255,255,0.2); color: #aaa;">🏠 Accueil</button>
+    </div>
+
+  </div>
+
+  <div class="footer">Dev by Mascret Clement | UI Remastered</div>
+
+  <input type="file" id="fileInput" style="display:none" accept=".csv" onchange="loadCSV(this)">
+
+  <script>
+    /* =========================================
+       DONNÉES & CONFIGURATION
+       =========================================
+    */
+
+    const mapsData = [
+      { name: "Vallée Yoshi", img: "map1.png", color: "#badc58" },
+      { name: "Route Arc-en-ciel", img: "map2.png", color: "#a29bfe" },
+      { name: "Station Glagla", img: "map3.png", color: "#74b9ff" },
+      { name: "Circuit Yoshi", img: "map4.png", color: "#55efc4" },
+      { name: "Château de Bowser", img: "map5.png", color: "#ff7675" },
+      { name: "Jungle DK", img: "map6.png", color: "#fdcb6e" }
+    ];
+
+    let currentTeams = [];
+    const maxTeams = 32;
+
+    /* =========================================
+       GESTION DE L'INTERFACE (NAVIGATION)
+       =========================================
+    */
+    function navTo(viewId) {
+      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+      document.getElementById(viewId).classList.add('active');
+    }
+
+    /* =========================================
+       LOGIQUE ÉQUIPES
+       =========================================
+    */
+    const teamListEl = document.getElementById('teamList');
+
+    function renderTeamInputs() {
+      teamListEl.innerHTML = "";
+      currentTeams.forEach((teamName, index) => {
+        createInputDOM(teamName, index);
+      });
+    }
+
+    function createInputDOM(value, index) {
+      const div = document.createElement('div');
+      div.className = 'team-input';
+      div.style.animationDelay = `${index * 0.05}s`;
+      div.innerHTML = `
+        <span style="color:var(--accent); font-weight:bold; min-width:20px;">${index + 1}.</span>
+        <input type="text" value="${value}" oninput="updateTeam(${index}, this.value)" placeholder="Nom de l'équipe">
+        <button class="delete-btn" onclick="removeTeam(${index})">×</button>
+      `;
+      teamListEl.appendChild(div);
+    }
+
+    function addTeamInput() {
+      if(currentTeams.length >= maxTeams) return alert("Limite atteinte !");
+      currentTeams.push("");
+      renderTeamInputs();
+      setTimeout(() => teamListEl.scrollTop = teamListEl.scrollHeight, 50);
+    }
+
+    function removeTeam(index) {
+      currentTeams.splice(index, 1);
+      renderTeamInputs();
+    }
+
+    function updateTeam(index, val) {
+      currentTeams[index] = val;
+    }
+
+    function resetAll() {
+      if(confirm("Tout effacer ?")) {
+        currentTeams = [];
+        renderTeamInputs();
+      }
+    }
+
+    renderTeamInputs();
+
+    /* =========================================
+       LOGIQUE TIRAGE AU SORT (FISHER-YATES SHUFFLE)
+       =========================================
+    */
+    function shuffle(array) {
+      let m = array.length, t, i;
+      while (m) {
+        i = Math.floor(Math.random() * m--);
+        t = array[m];
+        array[m] = array[i];
+        array[i] = t;
+      }
+      return array;
+    }
+
+    function processDraw() {
+      const validTeams = currentTeams.filter(t => t.trim() !== "");
+      
+      if (validTeams.length < 2) {
+        alert("Il faut au moins 2 participants !");
+        return;
+      }
+
+      const mode = document.getElementById('modeSelect').value;
+      const shuffled = shuffle([...validTeams]);
+      const container = document.getElementById('resultsContainer');
+      container.innerHTML = "";
+
+      navTo('resultView');
+
+      if (mode === 'liste') {
+        shuffled.forEach((team, i) => {
+          const div = document.createElement('div');
+          div.className = "result-card";
+          div.style.animationDelay = `${i * 0.1}s`;
+          div.innerHTML = `<strong>#${i + 1}</strong> <span>${team}</span>`;
+          container.appendChild(div);
+        });
+      } else {
+        const mid = Math.ceil(shuffled.length / 2);
+        const poolA = shuffled.slice(0, mid);
+        const poolB = shuffled.slice(mid);
+
+        container.innerHTML = `
+          <div class="pool-container">
+            <div class="pool-column" id="colA"><h3>🏆 Poule A</h3></div>
+            <div class="pool-column" id="colB"><h3>🏆 Poule B</h3></div>
+          </div>
+        `;
+
+        poolA.forEach((t, i) => {
+          const d = document.createElement('div');
+          d.className="result-card"; d.style.animationDelay=`${i*0.1}s`;
+          d.innerHTML = `<span>${t}</span>`;
+          document.getElementById('colA').appendChild(d);
+        });
+        
+        poolB.forEach((t, i) => {
+          const d = document.createElement('div');
+          d.className="result-card"; d.style.animationDelay=`${(i*0.1) + 0.3}s`;
+          d.innerHTML = `<span>${t}</span>`;
+          document.getElementById('colB').appendChild(d);
+        });
+      }
+    }
+
+    /* =========================================
+       CSV IMPORT/EXPORT
+       =========================================
+    */
+    function saveCSV() {
+      const validTeams = currentTeams.filter(t => t.trim() !== "");
+      if(!validTeams.length) return alert("Rien à sauvegarder.");
+      const blob = new Blob([validTeams.join("\n")], {type: "text/csv"});
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "rikdraft_teams.csv";
+      link.click();
+    }
+
+    function loadCSV(input) {
+      const file = input.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        currentTeams = text.split(/\r?\n/).filter(line => line.trim() !== "");
+        renderTeamInputs();
+        alert("Chargement terminé !");
+      };
+      reader.readAsText(file);
+      input.value = ''; 
+    }
+
+    /* =========================================
+       LOGIQUE MAPS (ROULETTE)
+       =========================================
+    */
+    const mapGallery = document.getElementById('mapGallery');
+    const drawnDisplay = document.getElementById('drawnMapDisplay');
+    const rouletteImg = document.getElementById('rouletteImgContainer');
+    const rouletteName = document.getElementById('rouletteName');
+    let isSpinning = false;
+    let lastMapIndex = -1;
+
+    function initMaps() {
+      resetMapUI();
+    }
+
+    function resetMapUI() {
+      mapGallery.classList.remove('hidden');
+      drawnDisplay.classList.add('hidden');
+      mapGallery.innerHTML = "";
+      
+      mapsData.forEach(map => {
+        const div = document.createElement('div');
+        div.className = 'map-card';
+        div.innerHTML = `
+          <div style="background:${map.color};">
+            <img src="${map.img}" onerror="this.style.display='none'; this.parentNode.classList.add('map-placeholder'); this.parentNode.innerHTML='🗺️'">
+          </div>
+          <span>${map.name}</span>
+        `;
+        mapGallery.appendChild(div);
+      });
+      
+      document.getElementById('spinBtn').textContent = "🎲 TIRER UNE MAP";
+    }
+
+    function spinRoulette() {
+      if (isSpinning) return;
+      isSpinning = true;
+
+      mapGallery.classList.add('hidden');
+      drawnDisplay.classList.remove('hidden');
+      document.getElementById('spinBtn').disabled = true;
+
+      let counter = 0;
+      let speed = 50;
+      let maxIterations = 30;
+      let currentIndex = 0;
+
+      function step() {
+        currentIndex = Math.floor(Math.random() * mapsData.length);
+        const map = mapsData[currentIndex];
+        rouletteName.textContent = map.name;
+        rouletteImg.innerHTML = `<img class="selected-map-img" src="${map.img}" style="border-color:${map.color}" onerror="this.src='https://via.placeholder.com/400x200?text=${encodeURIComponent(map.name)}'">`;
+
+        counter++;
+
+        if (counter < maxIterations) {
+          if (counter > maxIterations - 10) speed += 30;
+          setTimeout(step, speed);
+        } else {
+          if (currentIndex === lastMapIndex && mapsData.length > 1) {
+             currentIndex = (currentIndex + 1) % mapsData.length;
+             const finalMap = mapsData[currentIndex];
+             rouletteName.textContent = finalMap.name;
+             rouletteImg.innerHTML = `<img class="selected-map-img" src="${finalMap.img}" style="border-color:${finalMap.color}" onerror="this.src='https://via.placeholder.com/400x200?text=${encodeURIComponent(finalMap.name)}'">`;
+          }
+          
+          lastMapIndex = currentIndex;
+          isSpinning = false;
+          document.getElementById('spinBtn').disabled = false;
+          document.getElementById('spinBtn').textContent = "🔄 RELANCER";
+          
+          rouletteName.style.textShadow = "0 0 50px white";
+          setTimeout(() => rouletteName.style.textShadow = "none", 500);
+        }
+      }
+      step();
+    }
+  </script>
+</body>
+</html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
