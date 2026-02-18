@@ -1,4 +1,4 @@
-#🏛️ RikDraft | Saint-Quentin Official Tournament
+🏛️ RikDraft | Saint-Quentin Official Tournament
 
 RikDraft est l'outil numérique de référence développé pour la gestion des tirages au sort lors des tournois officiels organisés par la Ville de Saint-Quentin.
 
